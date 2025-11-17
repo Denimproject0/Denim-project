@@ -1,73 +1,432 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Denim Project - Orders</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DENIM PROJECT — Order System</title>
 <style>
-body { font-family: Arial; margin: 20px; }
-.container { max-width: 500px; margin: auto; }
-button { margin: 10px 0; padding: 12px; width: 100%; font-size: 16px; }
-input, select { width: 100%; padding: 8px; margin: 6px 0; }
-h2 { text-align: center; }
-.hidden { display: none; }
+  :root{
+    --brand: #0b72ff;
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --success: #10b981;
+    --danger: #ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, Arial, sans-serif;background:var(--bg);color:#0f172a}
+  header{background:var(--card);padding:14px;border-bottom:1px solid #e6e9ef;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+  .logo{font-weight:800;color:var(--brand);font-size:18px}
+  .subtitle{font-size:13px;color:var(--muted)}
+  .top-actions{margin-left:auto;display:flex;gap:8px}
+  .btn{background:var(--brand);color:#fff;padding:10px 12px;border-radius:10px;border:0;font-weight:700;box-shadow:0 6px 14px rgba(11,114,255,0.12)}
+  .secondary{background:#fff;color:var(--brand);border:1px solid rgba(11,114,255,0.12);padding:8px 10px;border-radius:10px;font-weight:700}
+  .container{max-width:940px;margin:12px auto;padding:12px}
+  .card{background:var(--card);border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 2px 6px rgba(10,20,40,0.04)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tab{padding:8px 12px;border-radius:999px;border:1px solid #eef2ff;background:#fff;color:var(--brand);cursor:pointer;font-weight:700}
+  .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  label{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+  input[type="text"], input[type="tel"], input[type="date"], select, textarea, input[type="number"]{
+    width:100%;padding:12px;border-radius:10px;border:1px solid #e6eaf0;margin-top:6px;font-size:15px;
+  }
+  textarea{min-height:80px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media(max-width:640px){ .grid2{grid-template-columns:1fr} .grid3{grid-template-columns:repeat(2,1fr)} header{padding:10px} .container{padding:10px} }
+  .photos{display:flex;gap:8px;margin-top:8px}
+  .photo-box{width:78px;height:78px;border-radius:10px;border:1px dashed #dbeafe;background:#fafbff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .photo-box img{width:100%;height:100%;object-fit:cover}
+  .small{font-size:13px;color:var(--muted)}
+  .actions{display:flex;gap:10px;margin-top:12px}
+  .big-btn{padding:14px;border-radius:12px;font-weight:800;font-size:16px;border:0;cursor:pointer}
+  .big-save{background:var(--brand);color:#fff;box-shadow:0 8px 18px rgba(11,114,255,0.12)}
+  .big-secondary{background:#fff;border:1px solid #e6eaf0;color:#111}
+  .orders{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .order-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px;border-radius:10px;background:#fff;border:1px solid #eef2ff}
+  .muted{color:var(--muted);font-size:13px}
+  .tag{padding:4px 8px;border-radius:999px;font-weight:700;font-size:12px}
+  .urgent{background:#fff7ed;color:#b45309;border:1px solid #ffedd5}
+  .status{font-weight:700;font-size:13px}
+  .photo-row{display:flex;gap:6px;margin-top:8px}
+  .tiny{font-size:12px;color:var(--muted)}
+  .center{text-align:center}
+  .help{font-size:13px;color:var(--muted);margin-top:6px}
 </style>
-<script>
-function showPage(page){
-    document.getElementById("customerPage").style.display = "none";
-    document.getElementById("shirtPage").style.display = "none";
-    document.getElementById("jeansPage").style.display = "none";
-    document.getElementById(page).style.display = "block";
-}
-</script>
 </head>
-
 <body>
+
+<header>
+  <div>
+    <div class="logo">DENIM PROJECT</div>
+    <div class="subtitle">Order & Measurements</div>
+  </div>
+  <div class="top-actions">
+    <button class="secondary" id="openOrdersBtn">Orders</button>
+    <button class="btn" id="openNewOrderBtn">New Order</button>
+  </div>
+</header>
 
 <div class="container">
 
-<!-- CUSTOMER PAGE -->
-<div id="customerPage">
-<h2>Customer & Order</h2>
-<label>Name:</label><input type="text">
-<label>Contact Number:</label><input type="text">
-<label>Order ID:</label><input type="text">
-<label>Order Date:</label><input type="date">
-<label>Trial Date:</label><input type="date">
-<label>Final Date:</label><input type="date">
+  <!-- MAIN CARD: TABS + FORMS -->
+  <div class="card">
+    <div class="tabs" id="mainTabs">
+      <div class="tab active" data-tab="customer">Customer</div>
+      <div class="tab" data-tab="shirt">Shirt / Jacket</div>
+      <div class="tab" data-tab="jeans">Jeans / Trouser</div>
+    </div>
 
-<button onclick="showPage('shirtPage')">Open Shirt / Jacket Form</button>
-<button onclick="showPage('jeansPage')">Open Jeans / Trouser Form</button>
+    <!-- CUSTOMER -->
+    <div id="customer" class="section" style="margin-top:12px">
+      <div class="section-title small" style="font-weight:800">Customer & Order</div>
+
+      <label>Customer Name</label>
+      <input id="cust_name" type="text" placeholder="Customer full name">
+
+      <div class="grid2">
+        <div>
+          <label>Contact Number</label>
+          <input id="cust_phone" type="tel" placeholder="Mobile number">
+        </div>
+        <div>
+          <label>Order ID (manual)</label>
+          <input id="order_id" type="text" placeholder="Type order id (eg. DP-001)">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Order Date</label>
+          <input id="order_date" type="date">
+        </div>
+        <div>
+          <label>Order Type</label>
+          <select id="order_type"><option>Normal</option><option>Urgent</option></select>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Trial Date</label><input id="trial_date" type="date"></div>
+        <div><label>Final Date</label><input id="final_date" type="date"></div>
+      </div>
+
+      <label>Remarks / Special instructions</label>
+      <textarea id="order_remarks" placeholder="Sample, reference, alterations..."></textarea>
+
+      <div class="small help">Upload photos (fabric/sample/reference) — max 3</div>
+      <div class="photos" id="photoPreviews">
+        <label class="photo-box" id="box0"><input id="photo0" type="file" accept="image/*" style="display:none"></label>
+        <label class="photo-box" id="box1"><input id="photo1" type="file" accept="image/*" style="display:none"></label>
+        <label class="photo-box" id="box2"><input id="photo2" type="file" accept="image/*" style="display:none"></label>
+      </div>
+
+      <div class="actions">
+        <button class="big-btn big-save" id="saveCustomer">Save Customer</button>
+        <button class="big-btn big-secondary" id="openShirtBtn">Open Shirt Form</button>
+        <button class="big-btn big-secondary" id="openJeansBtn">Open Jeans Form</button>
+      </div>
+    </div>
+
+    <!-- SHIRT -->
+    <div id="shirt" class="section" style="display:none;margin-top:12px">
+      <div class="section-title small" style="font-weight:800">Shirt / Jacket — Product & Measurements</div>
+
+      <div class="grid2">
+        <div><label>Product Type</label><select id="shirt_product"><option>Shirt</option><option>Jacket</option></select></div>
+        <div><label>Fit Type</label><select id="shirt_fit"><option>Comfort</option><option>Slim</option><option>Straight</option><option>Skinny</option><option>Loose</option></select></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Fabric</label><input id="shirt_fabric" type="text" placeholder="Fabric / name"></div>
+        <div><label>Fabric Code</label><input id="shirt_fabric_code" type="text" placeholder="Code"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Thread</label><input id="shirt_thread" type="text"></div>
+        <div><label>Thread Code</label><input id="shirt_thread_code" type="text"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Button</label><input id="shirt_button" type="text"></div>
+        <div><label>Button Code</label><input id="shirt_button_code" type="text"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Pocket</label><input id="shirt_pocket" type="text" placeholder="Pocket type"></div>
+        <div><label>Back Pocket / Detail</label><input id="shirt_back_pocket" type="text"></div>
+      </div>
+
+      <div class="section-title small" style="margin-top:10px">Measurements (cm)</div>
+      <div class="measure-grid grid3" style="margin-top:8px">
+        <div><label>Neck</label><input id="m_neck" type="number"></div>
+        <div><label>Shoulder</label><input id="m_shoulder" type="number"></div>
+        <div><label>Chest</label><input id="m_chest" type="number"></div>
+
+        <div><label>Waist (shirt)</label><input id="m_waist_shirt" type="number"></div>
+        <div><label>Hip (shirt)</label><input id="m_hip_shirt" type="number"></div>
+        <div><label>Sleeve</label><input id="m_sleeve" type="number"></div>
+
+        <div><label>Armhole</label><input id="m_armhole" type="number"></div>
+        <div><label>Bicep</label><input id="m_bicep" type="number"></div>
+        <div><label>Cuff</label><input id="m_cuff" type="number"></div>
+
+        <div><label>Length (shirt)</label><input id="m_length_shirt" type="number"></div>
+      </div>
+
+      <div class="actions" style="margin-top:12px">
+        <button class="big-btn big-save" id="saveShirt">Save Shirt Details</button>
+        <button class="big-btn big-secondary" id="backToCustomerFromShirt">Back</button>
+      </div>
+    </div>
+
+    <!-- JEANS -->
+    <div id="jeans" class="section" style="display:none;margin-top:12px">
+      <div class="section-title small" style="font-weight:800">Jeans / Trouser — Product & Measurements</div>
+
+      <div class="grid2">
+        <div><label>Product Type</label><select id="jeans_product"><option>Jeans</option><option>Trouser</option><option>Chinos</option></select></div>
+        <div><label>Fit Type</label><select id="jeans_fit"><option>Straight</option><option>Comfort</option><option>Skinny</option><option>Slim</option></select></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Fabric</label><input id="jeans_fabric" type="text"></div>
+        <div><label>Fabric Code</label><input id="jeans_fabric_code" type="text"></div>
+      </div>
+
+      <div class="measure-grid grid3" style="margin-top:8px">
+        <div><label>Waist</label><input id="j_waist" type="number"></div>
+        <div><label>Hip</label><input id="j_hip" type="number"></div>
+        <div><label>Thigh</label><input id="j_thigh" type="number"></div>
+
+        <div><label>Knee</label><input id="j_knee" type="number"></div>
+        <div><label>Bottom</label><input id="j_bottom" type="number"></div>
+        <div><label>Calf</label><input id="j_calf" type="number"></div>
+
+        <div><label>Inseam</label><input id="j_inseam" type="number"></div>
+        <div><label>Length (trouser)</label><input id="j_length" type="number"></div>
+        <div><label>Front Rise</label><input id="j_front_rise" type="number"></div>
+
+        <div><label>Back Rise</label><input id="j_back_rise" type="number"></div>
+        <div><label>Back Pocket Height</label><input id="j_back_pocket_height" type="number"></div>
+        <div><label>To Knee Length</label><input id="j_to_knee_length" type="number"></div>
+      </div>
+
+      <div class="actions" style="margin-top:12px">
+        <button class="big-btn big-save" id="saveJeans">Save Jeans Details</button>
+        <button class="big-btn big-secondary" id="backToCustomerFromJeans">Back</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ORDERS LIST CARD -->
+  <div class="card" id="ordersCard" style="display:none">
+    <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+      <div style="font-weight:800">All Orders</div>
+      <div class="small muted">Saved on device (localStorage)</div>
+    </div>
+
+    <div style="margin-top:10px" class="grid2">
+      <input id="searchInput" placeholder="Search by name / order id / product">
+      <div style="display:flex;gap:8px">
+        <button class="secondary" id="clearSearch">Clear</button>
+        <button class="btn" id="refreshList">Refresh</button>
+      </div>
+    </div>
+
+    <div class="orders" id="ordersList" style="margin-top:10px"></div>
+  </div>
+
+  <!-- TAILOR PANEL -->
+  <div class="card" id="tailorCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800">Tailor Panel (Open)</div>
+      <div class="muted tiny">Tap an order to open details</div>
+    </div>
+    <div id="tailorOrders" style="margin-top:10px"></div>
+  </div>
+
+  <div class="center muted tiny" style="margin-top:8px">Prototype • Data stored on this device only. To go live across devices we can add backend later.</div>
 </div>
 
+<script>
+/* ---------- Helpers ---------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const uid = ()=> 'o'+Math.random().toString(36).slice(2,9);
+let photos = [null, null, null];
+let orders = JSON.parse(localStorage.getItem('dp_orders_v3')||'[]');
 
-<!-- SHIRT PAGE -->
-<div id="shirtPage" class="hidden">
-<h2>Shirt / Jacket Form</h2>
+/* ---------- Init ---------- */
+(function init(){
+  // default dates
+  const today = new Date().toISOString().slice(0,10);
+  $('#order_date').value = today;
+  // attach tab clicks
+  $$('#mainTabs .tab').forEach(t=>{
+    t.addEventListener('click', ()=> {
+      $$('#mainTabs .tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      showSection(t.dataset.tab || t.textContent.toLowerCase());
+    });
+  });
+  // photo inputs open on box click
+  [0,1,2].forEach(i=>{
+    const box = $('#box'+i);
+    box.addEventListener('click', ()=> document.getElementById('photo'+i).click());
+    document.getElementById('photo'+i).addEventListener('change', e=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const r = new FileReader();
+      r.onload = ()=> { photos[i] = r.result; renderPhoto(i); };
+      r.readAsDataURL(f);
+    });
+    renderPhoto(i);
+  });
+  // nav buttons
+  $('#openOrdersBtn').addEventListener('click', ()=> showOrders());
+  $('#openNewOrderBtn').addEventListener('click', ()=> { showSection('customer'); window.scrollTo({top:0,behavior:'smooth'}); });
+  $('#openShirtBtn').addEventListener('click', ()=> { showSection('shirt'); scrollToTop(); });
+  $('#openJeansBtn').addEventListener('click', ()=> { showSection('jeans'); scrollToTop(); });
+  $('#saveCustomer').addEventListener('click', saveCustomer);
+  $('#saveShirt').addEventListener('click', saveShirt);
+  $('#saveJeans').addEventListener('click', saveJeans);
+  $('#backToCustomerFromShirt').addEventListener('click', ()=> showSection('customer'));
+  $('#backToCustomerFromJeans').addEventListener('click', ()=> showSection('customer'));
+  $('#searchInput').addEventListener('keydown', e=> { if(e.key==='Enter') renderOrders(); });
+  $('#searchBtn')?.addEventListener('click', ()=> renderOrders());
+  $('#clearSearch').addEventListener('click', ()=> { $('#searchInput').value=''; renderOrders(); });
+  $('#refreshList').addEventListener('click', ()=> renderOrders());
+  // initial render
+  renderOrders();
+  renderTailor();
+})();
 
-<label>Chest:</label><input type="number">
-<label>Waist:</label><input type="number">
-<label>Shoulder:</label><input type="number">
-<label>Sleeve:</label><input type="number">
-<label>Length:</label><input type="number">
+function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+function showSection(key){
+  ['customer','shirt','jeans','ordersCard','tailorCard'].forEach(id=>{ $('#'+id) && ($('#'+id).style.display = 'none'); });
+  if(key==='orders') { $('#ordersCard').style.display=''; renderOrders(); }
+  else if(key==='tailor') { $('#tailorCard').style.display=''; renderTailor(); }
+  else { $('#'+key).style.display = ''; }
+}
 
-<button onclick="showPage('customerPage')">⬅ Back</button>
-</div>
+/* ---------- Photos ---------- */
+function renderPhoto(i){
+  const box = $('#box'+i);
+  if(photos[i]){
+    box.innerHTML = <div style="position:relative;width:100%;height:100%"><img src="${photos[i]}" alt="p${i}"><button style="position:absolute;right:-6px;top:-6px;background:var(--danger);color:#fff;border:0;border-radius:50%;width:22px;height:22px;font-weight:700">x</button></div>;
+    box.querySelector('button').addEventListener('click', ()=> { photos[i]=null; document.getElementById('photo'+i).value=null; renderPhoto(i); });
+  } else {
+    box.innerHTML = <div style="font-size:13px;color:var(--muted)">Upload</div>;
+  }
+}
 
+/* ---------- Save / Persist ---------- */
+function persist(){ localStorage.setItem('dp_orders_v3', JSON.stringify(orders)); renderOrders(); renderTailor(); }
 
-<!-- JEANS PAGE -->
-<div id="jeansPage" class="hidden">
-<h2>Jeans / Trouser Form</h2>
+function gatherCustomer(){
+  return {
+    id: ($('#order_id').value||'').trim() || uid(),
+    name: ($('#cust_name').value||'').trim(),
+    phone: ($('#cust_phone').value||'').trim(),
+    orderDate: $('#order_date').value || '',
+    trialDate: $('#trial_date').value || '',
+    finalDate: $('#final_date').value || '',
+    orderType: $('#order_type').value || 'Normal',
+    remarks: ($('#order_remarks').value||'').trim(),
+    photos: photos.filter(x=>x).slice(0,3)
+  };
+}
 
-<label>Waist:</label><input type="number">
-<label>Hip:</label><input type="number">
-<label>Thigh:</label><input type="number">
-<label>Knee:</label><input type="number">
-<label>Length:</label><input type="number">
+function saveCustomer(){
+  const c = gatherCustomer();
+  if(!c.name || !c.phone){ alert('Please enter customer name and phone'); return; }
+  const idx = orders.findIndex(o=>o.id===c.id);
+  if(idx>=0){
+    // merge (preserve products if exist)
+    orders[idx] = {...orders[idx], ...c};
+  } else {
+    c.createdAt = new Date().toISOString();
+    orders.unshift(c);
+  }
+  persist();
+  alert('Customer saved. Open Shirt or Jeans to add product measurements.');
+  showSection('customer');
+  scrollToTop();
+}
 
-<button onclick="showPage('customerPage')">⬅ Back</button>
-</div>
+/* ---------- Shirt ---------- */
+function saveShirt(){
+  const id = ($('#order_id').value||'').trim();
+  if(!id){ alert('Set Order ID in Customer form first'); return; }
+  const idx = orders.findIndex(o=>o.id===id);
+  if(idx<0){ alert('Order not found — save customer first'); return; }
+  const shirt = {
+    productType: $('#shirt_product').value,
+    fit: $('#shirt_fit').value,
+    fabric: $('#shirt_fabric').value,
+    fabricCode: $('#shirt_fabric_code').value,
+    thread: $('#shirt_thread').value,
+    threadCode: $('#shirt_thread_code').value,
+    button: $('#shirt_button').value,
+    buttonCode: $('#shirt_button_code').value,
+    pocket: $('#shirt_pocket').value,
+    backPocket: $('#shirt_back_pocket').value,
+    measurements: {
+      neck: $('#m_neck').value, shoulder: $('#m_shoulder').value, chest: $('#m_chest').value,
+      waist_shirt: $('#m_waist_shirt').value, hip_shirt: $('#m_hip_shirt').value, sleeve: $('#m_sleeve').value,
+      armhole: $('#m_armhole').value, bicep: $('#m_bicep').value, cuff: $('#m_cuff').value, length_shirt: $('#m_length_shirt').value
+    }
+  };
+  orders[idx].shirt = shirt;
+  persist();
+  alert('Shirt / Jacket saved.');
+  showSection('customer');
+  scrollToTop();
+}
 
-</div>
+/* ---------- Jeans ---------- */
+function saveJeans(){
+  const id = ($('#order_id').value||'').trim();
+  if(!id){ alert('Set Order ID in Customer form first'); return; }
+  const idx = orders.findIndex(o=>o.id===id);
+  if(idx<0){ alert('Order not found — save customer first'); return; }
+  const jeans = {
+    productType: $('#jeans_product').value,
+    fit: $('#jeans_fit').value,
+    fabric: $('#jeans_fabric').value,
+    fabricCode: $('#jeans_fabric_code').value,
+    measurements: {
+      waist: $('#j_waist').value, hip: $('#j_hip').value, thigh: $('#j_thigh').value, knee: $('#j_knee').value,
+      bottom: $('#j_bottom').value, calf: $('#j_calf').value, inseam: $('#j_inseam').value, length: $('#j_length').value,
+      front_rise: $('#j_front_rise').value, back_rise: $('#j_back_rise').value, back_pocket_height: $('#j_back_pocket_height').value,
+      to_knee_length: $('#j_to_knee_length').value
+    }
+  };
+  orders[idx].jeans = jeans;
+  persist();
+  alert('Jeans / Trouser saved.');
+  showSection('customer');
+  scrollToTop();
+}
 
-</body>
-</html>
+/* ---------- Render Orders ---------- */
+function renderOrders(){
+  const list = $('#ordersList');
+  list.innerHTML = '';
+  const q = ($('#searchInput').value||'').trim().toLowerCase();
+  let filtered = orders.slice();
+  if(q) filtered = filtered.filter(o=>{
+    return (o.name||'').toLowerCase().includes(q) || (o.id||'').toLowerCase().includes(q) ||
+      (o.shirt && (o.shirt.productType||'').toLowerCase().includes(q)) ||
+      (o.jeans && (o.jeans.productType||'').toLowerCase().includes(q));
+  });
+  if(filtered.length===0){ list.innerHTML = '<div class="muted">No orders yet.</div>'; return; }
+  filtered.forEach(o=>{
+    const div = document.createElement('div'); div.className='order-item';
+    const left = document.createElement('div');
+    left.style.flex='1';
+    left.innerHTML = `<div style="font-weight:800">${o.name} <span class="muted">(${o.id})</span></div>
+      <div class="muted">${o.shirt?o.shirt.productType:''} ${o.jeans?o.jeans.productType:''} • ${o.orderType||''}</div>
+      <div class="muted">Trial: ${o.trialDate||'-'} |
