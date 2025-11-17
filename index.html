@@ -1,99 +1,460 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Denim Project Order System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: Arial; padding: 15px; background:#f2f2f2; }
-        input, textarea, select, button {
-            width: 100%; padding: 12px; margin: 8px 0;
-            border: 1px solid #ccc; border-radius: 6px;
-        }
-        button {
-            background: black; color: white; border: none;
-            font-size: 16px; padding: 12px; border-radius: 6px;
-        }
-        .card { background:white; padding:15px; border-radius:10px; margin-top:10px; }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Denim Project — Order System</title>
+<style>
+  :root{--brand:#0b72ff;--muted:#666;--card:#fff;--bg:#f4f6f8}
+  html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#111}
+  header{background:#fff;padding:12px 14px;border-bottom:1px solid #e6e9ee;display:flex;align-items:center;gap:12px}
+  .logo{font-weight:700;color:var(--brand);font-size:18px}
+  .nav{margin-left:auto;display:flex;gap:8px}
+  .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px;border:0;font-weight:600}
+  .container{max-width:980px;margin:14px auto;padding:0 12px}
+  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 1px 0 rgba(0,0,0,0.04);margin-bottom:12px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tab{padding:8px 12px;border-radius:8px;background:#fff;border:1px solid #e6e9ee;cursor:pointer}
+  .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  label{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+  input[type="text"], input[type="date"], input[type="number"], textarea, select{
+    width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px;box-sizing:border-box;
+  }
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} .container{padding:10px} header{padding:10px} }
+  .photos{display:flex;gap:8px;margin-top:8px}
+  .photo-box{width:72px;height:72px;border-radius:8px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .photo-box img{width:100%;height:100%;object-fit:cover}
+  .small{font-size:13px;color:var(--muted)}
+  .actions{display:flex;gap:8px;margin-top:12px}
+  .secondary{background:#f0f4ff;color:var(--brand);border:1px solid var(--brand)}
+  .orders{display:flex;flex-direction:column;gap:8px}
+  .order-item{padding:10px;border-radius:8px;background:#fff;border:1px solid #eee;display:flex;justify-content:space-between;gap:10px}
+  .order-left{flex:1}
+  .order-photos{display:flex;gap:6px;margin-top:8px}
+  .muted{color:var(--muted);font-size:13px}
+  .section-title{font-weight:700;margin-top:6px}
+  .measure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media (max-width:640px){ .measure-grid{grid-template-columns:repeat(2,1fr)} }
+  .search-row{display:flex;gap:8px;align-items:center}
+  .linkish{color:var(--brand);text-decoration:underline;cursor:pointer;font-size:13px}
+</style>
 </head>
 <body>
 
-<h2>DENIM PROJECT – Order Form</h2>
+<header>
+  <div class="logo">DENIM PROJECT</div>
+  <div class="muted">Order System</div>
+  <div class="nav">
+    <button class="btn" id="openNewOrder">New Order</button>
+    <button class="tab" id="openOrders">Orders</button>
+    <button class="tab" id="openTailor">Tailor Panel</button>
+  </div>
+</header>
 
-<div class="card">
-<form id="orderForm">
+<div class="container">
 
-    <input type="text" id="name" placeholder="Customer Name" required>
-    <input type="text" id="number" placeholder="Phone Number" required>
-    <input type="text" id="orderId" placeholder="Order ID (Manual)" required>
+  <!-- Tabs area -->
+  <div id="mainArea">
 
-    <label>Order Date</label>
-    <input type="date" id="orderDate">
+    <!-- Tabs selectors -->
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="customer" id="tabCustomer">Customer</div>
+        <div class="tab" data-tab="shirt" id="tabShirt">Shirt / Jacket</div>
+        <div class="tab" data-tab="jeans" id="tabJeans">Jeans / Trouser</div>
+      </div>
+    </div>
 
-    <label>Trial Date</label>
-    <input type="date" id="trial">
+    <!-- Customer details card -->
+    <div class="card" id="customerCard">
+      <div class="section-title">Customer & Order</div>
+      <label>Name</label>
+      <input id="cust_name" placeholder="Customer name">
 
-    <label>Final Date</label>
-    <input type="date" id="final">
+      <label>Contact Number</label>
+      <input id="cust_phone" placeholder="Phone number">
 
-    <textarea id="measure" rows="4" placeholder="Measurements (All)"></textarea>
+      <label>Order ID (manual)</label>
+      <input id="order_id" placeholder="Order ID">
 
-    <label>Upload Photos (Max 3)</label>
-    <input type="file" id="photos" accept="image/*" multiple>
+      <div class="grid">
+        <div>
+          <label>Order Date</label>
+          <input id="order_date" type="date">
+        </div>
+        <div>
+          <label>Order Type</label>
+          <select id="order_type"><option>Normal</option><option>Urgent</option></select>
+        </div>
+      </div>
 
-    <button type="submit">Save Order</button>
-</form>
+      <div class="grid">
+        <div>
+          <label>Trial Date</label>
+          <input id="trial_date" type="date">
+        </div>
+        <div>
+          <label>Final Date</label>
+          <input id="final_date" type="date">
+        </div>
+      </div>
+
+      <label>Remarks / Special instructions</label>
+      <textarea id="order_remarks" rows="2" placeholder="Remarks, sample notes, reference image link etc."></textarea>
+
+      <div style="margin-top:10px" class="small muted">Photos (preview & upload) — max 3</div>
+      <div class="photos" id="photoPreviews">
+        <label class="photo-box">
+          <input type="file" accept="image/*" id="photo0" style="display:none">
+          <div onclick="document.getElementById('photo0').click()" class="small">Upload</div>
+        </label>
+        <label class="photo-box">
+          <input type="file" accept="image/*" id="photo1" style="display:none">
+          <div onclick="document.getElementById('photo1').click()" class="small">Upload</div>
+        </label>
+        <label class="photo-box">
+          <input type="file" accept="image/*" id="photo2" style="display:none">
+          <div onclick="document.getElementById('photo2').click()" class="small">Upload</div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="saveOrderBtn">Save Order</button>
+        <button class="secondary" id="startShirt">Open Shirt Form</button>
+        <button class="secondary" id="startJeans">Open Jeans Form</button>
+      </div>
+    </div>
+
+    <!-- Shirt / Jacket form -->
+    <div class="card" id="shirtCard" style="display:none">
+      <div class="section-title">Shirt / Jacket — Product Details</div>
+
+      <div class="grid">
+        <div>
+          <label>Product Type</label>
+          <select id="shirt_product"><option>Shirt</option><option>Jacket</option></select>
+        </div>
+        <div>
+          <label>Fit Type</label>
+          <select id="shirt_fit"><option>Slim</option><option>Comfort</option><option>Straight</option><option>Skinny</option><option>Loose</option></select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div><label>Fabric</label><input id="shirt_fabric" placeholder="Fabric / code"></div>
+        <div><label>Fabric Code</label><input id="shirt_fabric_code" placeholder="Fabric code"></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Thread</label><input id="shirt_thread"></div>
+        <div><label>Thread Code</label><input id="shirt_thread_code"></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Button</label><input id="shirt_button"></div>
+        <div><label>Button Code</label><input id="shirt_button_code"></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Pocket</label><input id="shirt_pocket" placeholder="Pocket type"></div>
+        <div><label>Back Pocket / Detail</label><input id="shirt_back_pocket"></div>
+      </div>
+
+      <div class="section-title">Measurements — Shirt / Jacket</div>
+      <div class="measure-grid">
+        <div><label>Neck</label><input id="m_neck" placeholder="in cm"></div>
+        <div><label>Shoulder</label><input id="m_shoulder"></div>
+        <div><label>Chest</label><input id="m_chest"></div>
+
+        <div><label>Waist (shirt)</label><input id="m_waist_shirt"></div>
+        <div><label>Hip (shirt)</label><input id="m_hip_shirt"></div>
+        <div><label>Sleeve</label><input id="m_sleeve"></div>
+
+        <div><label>Armhole</label><input id="m_armhole"></div>
+        <div><label>Bicep</label><input id="m_bicep"></div>
+        <div><label>Cuff</label><input id="m_cuff"></div>
+
+        <div><label>Length (shirt)</label><input id="m_length_shirt"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="saveShirt">Save Shirt Details</button>
+        <button class="secondary" id="backToCustomerFromShirt">Back</button>
+      </div>
+    </div>
+
+    <!-- Jeans / Trouser form -->
+    <div class="card" id="jeansCard" style="display:none">
+      <div class="section-title">Jeans / Trouser — Product Details</div>
+
+      <div class="grid">
+        <div><label>Product Type</label><select id="jeans_product"><option>Jeans</option><option>Trouser</option><option>Chinos</option></select></div>
+        <div><label>Fit Type</label><select id="jeans_fit"><option>Straight</option><option>Comfort</option><option>Skinny</option><option>Slim</option></select></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Fabric</label><input id="jeans_fabric"></div>
+        <div><label>Fabric Code</label><input id="jeans_fabric_code"></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Waist (jeans)</label><input id="j_waist"></div>
+        <div><label>Hip (jeans)</label><input id="j_hip"></div>
+      </div>
+
+      <div class="measure-grid">
+        <div><label>Thigh</label><input id="j_thigh"></div>
+        <div><label>Knee</label><input id="j_knee"></div>
+        <div><label>Bottom</label><input id="j_bottom"></div>
+
+        <div><label>Calf</label><input id="j_calf"></div>
+        <div><label>Inseam</label><input id="j_inseam"></div>
+        <div><label>Length (trouser)</label><input id="j_length"></div>
+
+        <div><label>Front Rise</label><input id="j_front_rise"></div>
+        <div><label>Back Rise</label><input id="j_back_rise"></div>
+        <div><label>Back Pocket Height</label><input id="j_back_pocket_height"></div>
+
+        <div><label>To Knee Length</label><input id="j_to_knee_length"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="saveJeans">Save Jeans Details</button>
+        <button class="secondary" id="backToCustomerFromJeans">Back</button>
+      </div>
+    </div>
+
+    <!-- Orders list -->
+    <div class="card" id="ordersCard" style="display:none">
+      <div class="section-title">All Orders</div>
+
+      <div class="search-row">
+        <input id="searchInput" placeholder="Search by name / order id / product" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd">
+        <button class="btn" id="searchBtn">Search</button>
+        <button class="secondary" id="clearSearch">Clear</button>
+      </div>
+
+      <div style="margin-top:10px" class="orders" id="ordersList">
+        <!-- order items -->
+      </div>
+    </div>
+
+    <!-- Tailor panel -->
+    <div class="card" id="tailorCard" style="display:none">
+      <div class="section-title">Tailor Panel — Open (No login)</div>
+      <div class="muted">Click an order to view details and update status</div>
+      <div style="margin-top:10px" id="tailorOrders"></div>
+    </div>
+
+  </div>
 </div>
 
-<h3>Search Order</h3>
-<input id="search" placeholder="Enter Order ID">
-<button onclick="searchOrder()">Search</button>
-
-<div id="result"></div>
-
 <script>
-document.getElementById("orderDate").value = new Date().toISOString().slice(0,10);
+/* ---------- Utilities ---------- */
+const qs = s=>document.querySelector(s);
+const qsa = s=>Array.from(document.querySelectorAll(s));
+function uid(){return 'o'+Math.random().toString(36).slice(2,9);}
 
-document.getElementById("orderForm").addEventListener("submit", function(e){
-    e.preventDefault();
+/* ---------- State ---------- */
+let photosData = [null,null,null];
+let orders = JSON.parse(localStorage.getItem('dp_orders_v2')||'[]');
 
-    let data = {
-        name: name.value,
-        number: number.value,
-        orderId: orderId.value,
-        orderDate: orderDate.value,
-        trial: trial.value,
-        final: final.value,
-        measure: measure.value
+/* ---------- Init dates ---------- */
+qs('#order_date').value = new Date().toISOString().slice(0,10);
+
+/* ---------- Photo uploads ---------- */
+[0,1,2].forEach(i=>{
+  const input = qs('#photo'+i);
+  input.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=> {
+      photosData[i] = r.result;
+      renderPhotoPreview(i);
     };
+    r.readAsDataURL(f);
+  });
+});
+function renderPhotoPreview(i){
+  const box = qsAll('.photo-box')[i] || document.querySelectorAll('.photo-box')[i];
+  const label = document.querySelectorAll('.photo-box')[i];
+  if(photosData[i]){
+    label.innerHTML = <div style="position:relative"><img src="${photosData[i]}"><button style="position:absolute;right:-6px;top:-6px;background:#ff5252;color:#fff;border-radius:50%;border:0;width:20px;height:20px">x</button></div>;
+    const btn = label.querySelector('button');
+    btn.addEventListener('click', ()=>{ photosData[i]=null; label.innerHTML='<div onclick="document.getElementById(\'photo'+i+'\').click()" class="small">Upload</div>'; });
+  } else {
+    label.innerHTML = <div onclick="document.getElementById('photo${i}').click()" class="small">Upload</div>;
+  }
+}
+function qsAll(sel){return document.querySelectorAll(sel);}
 
-    localStorage.setItem(orderId.value, JSON.stringify(data));
+/* ---------- Tabs navigation ---------- */
+function showTab(t){
+  qsa('.tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===t || el.id===t));
+  qs('#customerCard').style.display = (t==='customer') ? '' : 'none';
+  qs('#shirtCard').style.display = (t==='shirt') ? '' : 'none';
+  qs('#jeansCard').style.display = (t==='jeans') ? '' : 'none';
+  qs('#ordersCard').style.display = 'none';
+  qs('#tailorCard').style.display = 'none';
+}
+qsa('.tab').forEach(el=>el.addEventListener('click', ()=> {
+  const key = el.dataset.tab || (el.id==='tabCustomer'?'customer':(el.id==='tabShirt'?'shirt':'jeans'));
+  showTab(key);
+}));
 
-    alert("Order Saved Successfully!");
-    location.reload();
+/* nav buttons */
+qs('#openNewOrder').addEventListener('click', ()=> { showTab('customer'); window.scrollTo(0,0); });
+qs('#openOrders').addEventListener('click', ()=> { showOrders(); });
+qs('#openTailor').addEventListener('click', ()=> { showTailor(); });
+
+/* quick open */
+qs('#startShirt').addEventListener('click', ()=> showTab('shirt'));
+qs('#startJeans').addEventListener('click', ()=> showTab('jeans'));
+
+/* ---------- Save Order ---------- */
+qs('#saveOrderBtn').addEventListener('click', saveOrder);
+function gatherCustomer(){
+  return {
+    id: qs('#order_id').value.trim() || uid(),
+    name: qs('#cust_name').value.trim(),
+    phone: qs('#cust_phone').value.trim(),
+    orderDate: qs('#order_date').value,
+    trialDate: qs('#trial_date').value,
+    finalDate: qs('#final_date').value,
+    orderType: qs('#order_type').value,
+    remarks: qs('#order_remarks').value,
+    photos: photosData.filter(x=>x).slice(0,3)
+  }
+}
+function saveOrder(){
+  const c = gatherCustomer();
+  if(!c.name || !c.phone){ alert('Please fill name and phone'); return; }
+  // if order id exists, replace existing base data but keep product objects if present
+  let existingIndex = orders.findIndex(o=>o.id === c.id);
+  if(existingIndex >= 0){
+    // keep shirt/jeans if already present, merge
+    const prev = orders[existingIndex];
+    const merged = {...prev, ...c};
+    orders[existingIndex] = merged;
+  } else {
+    orders.unshift({...c, createdAt: new Date().toISOString()});
+  }
+  persist();
+  alert('Customer saved. Now open Shirt or Jeans form to add product measurements.');
+  renderOrdersList();
+  showTab('customer');
+}
+
+/* ---------- Shirt Save ---------- */
+qs('#saveShirt').addEventListener('click', ()=>{
+  const id = qs('#order_id').value.trim();
+  if(!id){ alert('Set Order ID in Customer form first'); return; }
+  const idx = orders.findIndex(o=>o.id===id);
+  if(idx<0){ alert('Order not found — save customer first'); return; }
+  const shirt = {
+    productType: qs('#shirt_product').value,
+    fit: qs('#shirt_fit').value,
+    fabric: qs('#shirt_fabric').value,
+    fabricCode: qs('#shirt_fabric_code').value,
+    thread: qs('#shirt_thread').value,
+    threadCode: qs('#shirt_thread_code').value,
+    button: qs('#shirt_button').value,
+    buttonCode: qs('#shirt_button_code').value,
+    pocket: qs('#shirt_pocket').value,
+    backPocket: qs('#shirt_back_pocket').value,
+    measurements: {
+      neck: qs('#m_neck').value, shoulder: qs('#m_shoulder').value, chest: qs('#m_chest').value,
+      waist_shirt: qs('#m_waist_shirt').value, hip_shirt: qs('#m_hip_shirt').value, sleeve: qs('#m_sleeve').value,
+      armhole: qs('#m_armhole').value, bicep: qs('#m_bicep').value, cuff: qs('#m_cuff').value, length_shirt: qs('#m_length_shirt').value
+    }
+  };
+  orders[idx].shirt = shirt;
+  persist();
+  alert('Shirt details saved.');
+  showTab('customer');
+  renderOrdersList();
 });
 
-function searchOrder(){
-    let id = search.value;
-    let data = localStorage.getItem(id);
-    if(!data){
-        result.innerHTML = "<p>No order found!</p>";
-        return;
+/* ---------- Jeans Save ---------- */
+qs('#saveJeans').addEventListener('click', ()=>{
+  const id = qs('#order_id').value.trim();
+  if(!id){ alert('Set Order ID in Customer form first'); return; }
+  const idx = orders.findIndex(o=>o.id===id);
+  if(idx<0){ alert('Order not found — save customer first'); return; }
+  const jeans = {
+    productType: qs('#jeans_product').value,
+    fit: qs('#jeans_fit').value,
+    fabric: qs('#jeans_fabric').value,
+    fabricCode: qs('#jeans_fabric_code').value,
+    measurements: {
+      waist: qs('#j_waist').value, hip: qs('#j_hip').value, thigh: qs('#j_thigh').value, knee: qs('#j_knee').value,
+      bottom: qs('#j_bottom').value, calf: qs('#j_calf').value, inseam: qs('#j_inseam').value, length: qs('#j_length').value,
+      front_rise: qs('#j_front_rise').value, back_rise: qs('#j_back_rise').value, back_pocket_height: qs('#j_back_pocket_height').value,
+      to_knee_length: qs('#j_to_knee_length').value
     }
-    let o = JSON.parse(data);
-    result.innerHTML = `
-    <div class='card'>
-        <h3>Order Details</h3>
-        <p><b>Name:</b> ${o.name}</p>
-        <p><b>Phone:</b> ${o.number}</p>
-        <p><b>Order ID:</b> ${o.orderId}</p>
-        <p><b>Order Date:</b> ${o.orderDate}</p>
-        <p><b>Trial:</b> ${o.trial}</p>
-        <p><b>Final:</b> ${o.final}</p>
-        <p><b>Measurements:</b><br>${o.measure}</p>
-    </div>`;
-}
-</script>
+  };
+  orders[idx].jeans = jeans;
+  persist();
+  alert('Jeans details saved.');
+  showTab('customer');
+  renderOrdersList();
+});
 
-</body>
-</html>
+/* ---------- Persistence ---------- */
+function persist(){ localStorage.setItem('dp_orders_v2', JSON.stringify(orders)); }
+
+/* ---------- Render Orders ---------- */
+function renderOrdersList(query=''){
+  const list = qs('#ordersList');
+  list.innerHTML = '';
+  let filtered = orders;
+  if(query){
+    const s = query.toLowerCase();
+    filtered = orders.filter(o => (o.name||'').toLowerCase().includes(s) || (o.id||'').toLowerCase().includes(s) || (o.shirt && o.shirt.productType.toLowerCase().includes(s)) || (o.jeans && o.jeans.productType.toLowerCase().includes(s)));
+  }
+  if(filtered.length===0){ list.innerHTML='<div class="muted">No orders yet.</div>'; return; }
+  filtered.forEach((o,idx)=>{
+    const div = document.createElement('div'); div.className='order-item';
+    const left = document.createElement('div'); left.className='order-left';
+    left.innerHTML = `<div style="font-weight:700">${o.name} <span class="muted">(${o.id})</span></div>
+      <div class="muted">${o.shirt?o.shirt.productType:''} ${o.jeans?o.jeans.productType:''} • ${o.orderType || ''}</div>
+      <div class="muted">Trial: ${o.trialDate||'-'} | Final: ${o.finalDate||'-'}</div>
+      <div class="muted">Remarks: ${o.remarks||'-'}</div>`;
+    if(o.photos && o.photos.length){
+      const phc = document.createElement('div'); phc.className='order-photos';
+      o.photos.forEach(p=>{
+        const img = document.createElement('img'); img.src = p; img.style.width='50px'; img.style.height='50px'; img.style.objectFit='cover'; img.style.borderRadius='6px';
+        phc.appendChild(img);
+      });
+      left.appendChild(phc);
+    }
+    const right = document.createElement('div');
+    right.style.textAlign='right';
+    right.innerHTML = `<div class="muted">Saved ${new Date(o.createdAt||o._savedAt||Date.now()).toLocaleString()}</div>
+      <div style="margin-top:8px">
+        <button class="tab" onclick="viewOrder('${o.id}')">View</button>
+        <button class="tab secondary" onclick="editOrder('${o.id}')">Edit</button>
+        <button class="tab" style="background:#ff6b6b;color:#fff;border-color:#ff6b6b" onclick="deleteOrder('${o.id}')">Delete</button>
+      </div>`;
+    div.appendChild(left); div.appendChild(right);
+    list.appendChild(div);
+  });
+}
+
+/* ---------- View / Edit / Delete ---------- */
+function viewOrder(id){
+  const o = orders.find(x=>x.id===id); if(!o) return alert('Not found');
+  // open a modal-like card (for simplicity open in tailor panel view)
+  showTailor();
+  const box = qs('#tailorOrders');
+  box.innerHTML = '';
+  const c = document.createElement('div'); c.className='card';
+  c.innerHTML = `<div style="font-weight:700">${o.name} <span class="muted">(${o.id})</span></div>
+    <div class="muted">Phone: ${o.phone}</div>
+    <div class="muted">Order date: ${o.orderDate}</div>
+    <div style="margin-top:8px"><b>Remarks:</b> ${o.remarks||'-'}</div>`;
+  if(o.photos && o.photos.length){
+    const pdiv = document.createElement('div'); pdiv.style.display='flex';pdiv.style.gap='8px';pdiv.style.marginTop='8px';
+    o.photos.forEa
