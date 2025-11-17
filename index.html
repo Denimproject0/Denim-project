@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Denim Project Order System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; padding: 15px; background:#f2f2f2; }
+        input, textarea, select, button {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border: 1px solid #ccc; border-radius: 6px;
+        }
+        button {
+            background: black; color: white; border: none;
+            font-size: 16px; padding: 12px; border-radius: 6px;
+        }
+        .card { background:white; padding:15px; border-radius:10px; margin-top:10px; }
+    </style>
+</head>
+<body>
+
+<h2>DENIM PROJECT – Order Form</h2>
+
+<div class="card">
+<form id="orderForm">
+
+    <input type="text" id="name" placeholder="Customer Name" required>
+    <input type="text" id="number" placeholder="Phone Number" required>
+    <input type="text" id="orderId" placeholder="Order ID (Manual)" required>
+
+    <label>Order Date</label>
+    <input type="date" id="orderDate">
+
+    <label>Trial Date</label>
+    <input type="date" id="trial">
+
+    <label>Final Date</label>
+    <input type="date" id="final">
+
+    <textarea id="measure" rows="4" placeholder="Measurements (All)"></textarea>
+
+    <label>Upload Photos (Max 3)</label>
+    <input type="file" id="photos" accept="image/*" multiple>
+
+    <button type="submit">Save Order</button>
+</form>
+</div>
+
+<h3>Search Order</h3>
+<input id="search" placeholder="Enter Order ID">
+<button onclick="searchOrder()">Search</button>
+
+<div id="result"></div>
+
+<script>
+document.getElementById("orderDate").value = new Date().toISOString().slice(0,10);
+
+document.getElementById("orderForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let data = {
+        name: name.value,
+        number: number.value,
+        orderId: orderId.value,
+        orderDate: orderDate.value,
+        trial: trial.value,
+        final: final.value,
+        measure: measure.value
+    };
+
+    localStorage.setItem(orderId.value, JSON.stringify(data));
+
+    alert("Order Saved Successfully!");
+    location.reload();
+});
+
+function searchOrder(){
+    let id = search.value;
+    let data = localStorage.getItem(id);
+    if(!data){
+        result.innerHTML = "<p>No order found!</p>";
+        return;
+    }
+    let o = JSON.parse(data);
+    result.innerHTML = `
+    <div class='card'>
+        <h3>Order Details</h3>
+        <p><b>Name:</b> ${o.name}</p>
+        <p><b>Phone:</b> ${o.number}</p>
+        <p><b>Order ID:</b> ${o.orderId}</p>
+        <p><b>Order Date:</b> ${o.orderDate}</p>
+        <p><b>Trial:</b> ${o.trial}</p>
+        <p><b>Final:</b> ${o.final}</p>
+        <p><b>Measurements:</b><br>${o.measure}</p>
+    </div>`;
+}
+</script>
+
+</body>
+</html>
